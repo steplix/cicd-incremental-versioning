@@ -1,0 +1,33 @@
+name: 'Incremental versioning'
+
+inputs:
+  GITHUB_TOKEN:
+    description: 'Token to use to push to the repo. Pass in using `secrets.GITHUB_TOKEN`'
+    required: true
+  PREFIX:
+    description: 'Version prefix used to create tag'
+    default: test-
+    required: false
+  PER_BRANCH:
+    description: 'If specified, only tags merged to the same branch will be considered. Useful for maintenance branches. Note: this requires fetching the history when checking out'
+    required: false
+    default: false
+  DRY_RUN:
+    description: 'If true, only calculate the new version and exit successfully'
+    default: false
+    required: false
+  DELETE_UP:
+    description: 'Delete up to setted tag'
+    required: false
+outputs:
+  VERSION:
+    description: 'The new version that was calculated'
+  VERSION_TAG:
+    description: 'The version string used to create the tag'
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
+branding:
+  icon: 'tag'
+  color: 'purple'
