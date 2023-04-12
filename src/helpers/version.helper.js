@@ -8,7 +8,7 @@ exports.DEFAULT_VERSION = 0;
 
 exports.isValidTag = (tag) => {
     if (!tag) return false;
-    if (prefixRegex.test(tag)) return false;
+    if (!prefixRegex.test(tag)) return false;
     const strVer = tag.replace(prefixRegex, '');
     const version = Number(strVer);
     return !isNaN(version);
