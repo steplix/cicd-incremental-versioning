@@ -22,9 +22,15 @@ const run = async () => {
         if (dryRun !== 'true') {
             await createTag(tag);
 
-            if (isValidTag(deleteUp)) {
-                const tagsToDelete = await getTagsToDelete();
-                await deleteTags(tagsToDelete);
+            // It's doesn't matter if fail when delete tags
+            try {
+                if (isValidTag(deleteUp)) {
+                    const tagsToDelete = await getTagsToDelete();
+                    await deleteTags(tagsToDelete);
+                }
+            }
+            catch (ex) {
+                console.error(ex);
             }
         }
     }
@@ -65,7 +71,7 @@ const getTagsToDelete = async () => {
         .filter(tag => isValidTag(tag))
         .filter(tag => {
             const version = extractVersion(tag);
-            return version < versionUp;
+            return version <= versionUp;
         });
 };
 

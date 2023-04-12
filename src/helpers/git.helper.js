@@ -21,8 +21,6 @@ exports.getRepoTags = async () => {
         ref: 'tags/'
     });
 
-    console.log('Repo tags:', tags);
-
     return tags.map(tag => tag.ref.replace(/^refs\/tags\//g, ''));
 };
 
@@ -53,6 +51,8 @@ exports.deleteTags = async (tags) => {
     const octokit = getOctokit(githubToken);
 
     for (const tag of tags) {
+        console.log(`Deleting tag ${tag}`);
+
         const ref = `refs/tags/${tag}`;
         octokit.rest.git.deleteRef({
             ...context.repo,
