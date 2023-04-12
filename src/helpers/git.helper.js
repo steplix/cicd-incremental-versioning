@@ -53,7 +53,7 @@ exports.deleteTags = async (tags) => {
     for (const tag of tags) {
         console.log(`Deleting tag ${tag}`);
 
-        const ref = `refs/tags/${tag}`;
+        const ref = `tags/${tag}`;
         await octokit.rest.git.deleteRef({
             ...context.repo,
             ref
