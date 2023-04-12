@@ -14,8 +14,8 @@ const run = async () => {
         const tag = `${prefix}${version}`;
         console.log(`Using tag prefix "${prefix}"`);
 
-        setOutput('version', version.toString());
-        setOutput('version-tag', tag);
+        setOutput('VERSION', version.toString());
+        setOutput('VERSION_TAG', tag);
 
         console.log(`Result: "${version.toString()}" (tag: "${tag}")`);
 
