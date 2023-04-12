@@ -4,7 +4,7 @@ const prefix = getInput('PREFIX');
 
 const prefixRegex = new RegExp(`^${prefix}`, 'g');
 
-exports.DEFAULT_VERSION = 1;
+exports.DEFAULT_VERSION = 0;
 
 exports.isValidTag = (tag) => {
     if (!tag) return false;

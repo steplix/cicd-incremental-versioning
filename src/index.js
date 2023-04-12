@@ -1,11 +1,11 @@
-const core = require('@actions/core');
-const gitHelper = require('./helpers/git.helper');
-const versionHelper = require('./helpers/version.helper');
+const { getInput, setOutput, setFailed } = require('@actions/core');
+const { createTag, deleteTags, getRepoTags, getBranchTags } = require('./helpers/git.helper');
+const { isValidTag, extractVersion, DEFAULT_VERSION } = require('./helpers/version.helper');
 
-const prefix = core.getInput('PREFIX');
-const dryRun = core.getInput('DRY_RUN');
-const deleteUp = core.getInput('DELETE_UP');
-const perBranch = core.getInput('PER_BRANCH');
+const prefix = getInput('PREFIX');
+const dryRun = getInput('DRY_RUN');
+const deleteUp = getInput('DELETE_UP');
+const perBranch = getInput('PER_BRANCH');
 
 const run = async () => {
     try {
@@ -14,57 +14,57 @@ const run = async () => {
         const tag = `${prefix}${version}`;
         console.log(`Using tag prefix "${prefix}"`);
 
-        core.setOutput('version', version.toString());
-        core.setOutput('version-tag', tag);
+        setOutput('version', version.toString());
+        setOutput('version-tag', tag);
 
         console.log(`Result: "${version.toString()}" (tag: "${tag}")`);
 
         if (dryRun !== 'true') {
-            await gitHelper.createTag(tag);
+            await createTag(tag);
 
-            if (versionHelper.isValidTag(deleteUp)) {
+            if (isValidTag(deleteUp)) {
                 const tagsToDelete = await getTagsToDelete();
-                await gitHelper.deleteTags(tagsToDelete);
+                await deleteTags(tagsToDelete);
             }
         }
     }
     catch (error) {
-        core.setFailed(error.message);
+        setFailed(error.message);
     }
 };
 
 const getMostRecentRepoVersion = async () => {
     console.log('Getting list of tags from repository');
 
-    const tags = await gitHelper.getRepoTags();
+    const tags = await getRepoTags();
     const versions = tags
-        .filter(tag => versionHelper.isValidTag(tag))
-        .map(tag => versionHelper.extractVersion(tag))
+        .filter(tag => isValidTag(tag))
+        .map(tag => extractVersion(tag))
         .sort((a, b) => b - a);
 
-    return versions[0] || versionHelper.DEFAULT_VERSION;
+    return versions[0] || DEFAULT_VERSION;
 };
 
 const getMostRecentBranchVersion = async () => {
     console.log('Getting list of tags from branch');
 
-    const tags = await gitHelper.getBranchTags();
+    const tags = await getBranchTags();
     const versions = tags
-        .filter(tag => versionHelper.isValidTag(tag))
-        .map(tag => versionHelper.extractVersion(tag))
+        .filter(tag => isValidTag(tag))
+        .map(tag => extractVersion(tag))
         .sort((a, b) => b - a);
 
-    return versions[0] || versionHelper.DEFAULT_VERSION;
+    return versions[0] || DEFAULT_VERSION;
 };
 
 const getTagsToDelete = async () => {
-    const tags = perBranch === 'true' ? await gitHelper.getBranchTags() : await gitHelper.getRepoTags();
-    const versionUp = versionHelper.extractVersion(deleteUp);
+    const tags = perBranch === 'true' ? await getBranchTags() : await getRepoTags();
+    const versionUp = extractVersion(deleteUp);
 
     return tags
-        .filter(tag => versionHelper.isValidTag(tag))
+        .filter(tag => isValidTag(tag))
         .filter(tag => {
-            const version = versionHelper.extractVersion(tag);
+            const version = extractVersion(tag);
             return version < versionUp;
         });
 };

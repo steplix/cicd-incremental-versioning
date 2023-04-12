@@ -21,6 +21,8 @@ exports.getRepoTags = async () => {
         ref: 'tags/'
     });
 
+    console.log('Repo tags:', tags);
+
     return tags.map(tag => tag.ref.replace(/^refs\/tags\//g, ''));
 };
 
