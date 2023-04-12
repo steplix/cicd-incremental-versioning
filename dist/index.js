@@ -10869,6 +10869,8 @@ exports.getRepoTags = async () => {
         ref: 'tags/'
     });
 
+    console.log('Repo tags:', tags);
+
     return tags.map(tag => tag.ref.replace(/^refs\/tags\//g, ''));
 };
 
@@ -10920,11 +10922,11 @@ const prefix = getInput('PREFIX');
 
 const prefixRegex = new RegExp(`^${prefix}`, 'g');
 
-exports.DEFAULT_VERSION = 1;
+exports.DEFAULT_VERSION = 0;
 
 exports.isValidTag = (tag) => {
     if (!tag) return false;
-    if (prefixRegex.test(tag)) return false;
+    if (!prefixRegex.test(tag)) return false;
     const strVer = tag.replace(prefixRegex, '');
     const version = Number(strVer);
     return !isNaN(version);
@@ -11139,14 +11141,14 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
-const core = __nccwpck_require__(2186);
-const gitHelper = __nccwpck_require__(9419);
-const versionHelper = __nccwpck_require__(3975);
+const { getInput, setOutput, setFailed } = __nccwpck_require__(2186);
+const { createTag, deleteTags, getRepoTags, getBranchTags } = __nccwpck_require__(9419);
+const { isValidTag, extractVersion, DEFAULT_VERSION } = __nccwpck_require__(3975);
 
-const prefix = core.getInput('PREFIX');
-const dryRun = core.getInput('DRY_RUN');
-const deleteUp = core.getInput('DELETE_UP');
-const perBranch = core.getInput('PER_BRANCH');
+const prefix = getInput('PREFIX');
+const dryRun = getInput('DRY_RUN');
+const deleteUp = getInput('DELETE_UP');
+const perBranch = getInput('PER_BRANCH');
 
 const run = async () => {
     try {
@@ -11155,57 +11157,57 @@ const run = async () => {
         const tag = `${prefix}${version}`;
         console.log(`Using tag prefix "${prefix}"`);
 
-        core.setOutput('version', version.toString());
-        core.setOutput('version-tag', tag);
+        setOutput('VERSION', version.toString());
+        setOutput('VERSION_TAG', tag);
 
         console.log(`Result: "${version.toString()}" (tag: "${tag}")`);
 
         if (dryRun !== 'true') {
-            await gitHelper.createTag(tag);
+            await createTag(tag);
 
-            if (versionHelper.isValidTag(deleteUp)) {
+            if (isValidTag(deleteUp)) {
                 const tagsToDelete = await getTagsToDelete();
-                await gitHelper.deleteTags(tagsToDelete);
+                await deleteTags(tagsToDelete);
             }
         }
     }
     catch (error) {
-        core.setFailed(error.message);
+        setFailed(error.message);
     }
 };
 
 const getMostRecentRepoVersion = async () => {
     console.log('Getting list of tags from repository');
 
-    const tags = await gitHelper.getRepoTags();
+    const tags = await getRepoTags();
     const versions = tags
-        .filter(tag => versionHelper.isValidTag(tag))
-        .map(tag => versionHelper.extractVersion(tag))
+        .filter(tag => isValidTag(tag))
+        .map(tag => extractVersion(tag))
         .sort((a, b) => b - a);
 
-    return versions[0] || versionHelper.DEFAULT_VERSION;
+    return versions[0] || DEFAULT_VERSION;
 };
 
 const getMostRecentBranchVersion = async () => {
     console.log('Getting list of tags from branch');
 
-    const tags = await gitHelper.getBranchTags();
+    const tags = await getBranchTags();
     const versions = tags
-        .filter(tag => versionHelper.isValidTag(tag))
-        .map(tag => versionHelper.extractVersion(tag))
+        .filter(tag => isValidTag(tag))
+        .map(tag => extractVersion(tag))
         .sort((a, b) => b - a);
 
-    return versions[0] || versionHelper.DEFAULT_VERSION;
+    return versions[0] || DEFAULT_VERSION;
 };
 
 const getTagsToDelete = async () => {
-    const tags = perBranch === 'true' ? await gitHelper.getBranchTags() : await gitHelper.getRepoTags();
-    const versionUp = versionHelper.extractVersion(deleteUp);
+    const tags = perBranch === 'true' ? await getBranchTags() : await getRepoTags();
+    const versionUp = extractVersion(deleteUp);
 
     return tags
-        .filter(tag => versionHelper.isValidTag(tag))
+        .filter(tag => isValidTag(tag))
         .filter(tag => {
-            const version = versionHelper.extractVersion(tag);
+            const version = extractVersion(tag);
             return version < versionUp;
         });
 };
