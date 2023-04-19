@@ -46,17 +46,3 @@ exports.createTag = async (tag) => {
         ref
     });
 };
-
-exports.deleteTags = async (tags) => {
-    const octokit = getOctokit(githubToken);
-
-    for (const tag of tags) {
-        console.log(`Deleting tag ${tag}`);
-
-        const ref = `tags/${tag}`;
-        await octokit.rest.git.deleteRef({
-            ...context.repo,
-            ref
-        });
-    }
-};

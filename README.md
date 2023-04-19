@@ -42,15 +42,6 @@ with:
     DRY_RUN: false
 ```
 
-#### `DELETE_UP` (optional)
-
-Delete up to setted tag:
-
-``` yaml
-with:
-    DELETE_UP: test-23
-```
-
 ### Example
 
 ``` yaml
@@ -59,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Tagging
-        uses: steplix/cicd-incremental-versioning@v1
+        uses: steplix/cicd-incremental-versioning@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

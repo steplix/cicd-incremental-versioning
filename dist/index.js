@@ -10895,20 +10895,6 @@ exports.createTag = async (tag) => {
     });
 };
 
-exports.deleteTags = async (tags) => {
-    const octokit = getOctokit(githubToken);
-
-    for (const tag of tags) {
-        console.log(`Deleting tag ${tag}`);
-
-        const ref = `tags/${tag}`;
-        await octokit.rest.git.deleteRef({
-            ...context.repo,
-            ref
-        });
-    }
-};
-
 
 /***/ }),
 
@@ -11141,12 +11127,11 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const { getInput, setOutput, setFailed } = __nccwpck_require__(2186);
-const { createTag, deleteTags, getRepoTags, getBranchTags } = __nccwpck_require__(9419);
+const { createTag, getRepoTags, getBranchTags } = __nccwpck_require__(9419);
 const { isValidTag, extractVersion, DEFAULT_VERSION } = __nccwpck_require__(3975);
 
 const prefix = getInput('PREFIX');
 const dryRun = getInput('DRY_RUN');
-const deleteUp = getInput('DELETE_UP');
 const perBranch = getInput('PER_BRANCH');
 
 const run = async () => {
@@ -11163,17 +11148,6 @@ const run = async () => {
 
         if (dryRun !== 'true') {
             await createTag(tag);
-
-            // It's doesn't matter if fail when delete tags
-            try {
-                if (isValidTag(deleteUp)) {
-                    const tagsToDelete = await getTagsToDelete();
-                    await deleteTags(tagsToDelete);
-                }
-            }
-            catch (ex) {
-                console.error(ex);
-            }
         }
     }
     catch (error) {
@@ -11203,18 +11177,6 @@ const getMostRecentBranchVersion = async () => {
         .sort((a, b) => b - a);
 
     return versions[0] || DEFAULT_VERSION;
-};
-
-const getTagsToDelete = async () => {
-    const tags = perBranch === 'true' ? await getBranchTags() : await getRepoTags();
-    const versionUp = extractVersion(deleteUp);
-
-    return tags
-        .filter(tag => isValidTag(tag))
-        .filter(tag => {
-            const version = extractVersion(tag);
-            return version <= versionUp;
-        });
 };
 
 run();

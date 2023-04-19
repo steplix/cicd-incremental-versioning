@@ -1,10 +1,9 @@
 const { getInput, setOutput, setFailed } = require('@actions/core');
-const { createTag, deleteTags, getRepoTags, getBranchTags } = require('./helpers/git.helper');
+const { createTag, getRepoTags, getBranchTags } = require('./helpers/git.helper');
 const { isValidTag, extractVersion, DEFAULT_VERSION } = require('./helpers/version.helper');
 
 const prefix = getInput('PREFIX');
 const dryRun = getInput('DRY_RUN');
-const deleteUp = getInput('DELETE_UP');
 const perBranch = getInput('PER_BRANCH');
 
 const run = async () => {
@@ -21,17 +20,6 @@ const run = async () => {
 
         if (dryRun !== 'true') {
             await createTag(tag);
-
-            // It's doesn't matter if fail when delete tags
-            try {
-                if (isValidTag(deleteUp)) {
-                    const tagsToDelete = await getTagsToDelete();
-                    await deleteTags(tagsToDelete);
-                }
-            }
-            catch (ex) {
-                console.error(ex);
-            }
         }
     }
     catch (error) {
@@ -61,18 +49,6 @@ const getMostRecentBranchVersion = async () => {
         .sort((a, b) => b - a);
 
     return versions[0] || DEFAULT_VERSION;
-};
-
-const getTagsToDelete = async () => {
-    const tags = perBranch === 'true' ? await getBranchTags() : await getRepoTags();
-    const versionUp = extractVersion(deleteUp);
-
-    return tags
-        .filter(tag => isValidTag(tag))
-        .filter(tag => {
-            const version = extractVersion(tag);
-            return version <= versionUp;
-        });
 };
 
 run();

@@ -16,9 +16,6 @@ inputs:
     description: 'If true, only calculate the new version and exit successfully'
     default: false
     required: false
-  DELETE_UP:
-    description: 'Delete up to setted tag'
-    required: false
 outputs:
   VERSION:
     description: 'The new version that was calculated'
